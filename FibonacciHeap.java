@@ -195,7 +195,11 @@ public class FibonacciHeap
 		else {
 			x.parent.child_list.Delete(x);
 			x.parent = null;
-			x.mark = false;
+			if (x.mark == true){
+				x.mark = false;
+				this.markedNum --;
+			}
+			this.treesNum++;
 			this.roots_list.insertAtStart(x);
 		}
 		if (x.key < this.min.key){
