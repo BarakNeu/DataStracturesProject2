@@ -1,3 +1,5 @@
+import java.util.Iterator;
+
 /**
  * FibonacciHeap
  *
@@ -266,11 +268,22 @@ public class FibonacciHeap
     * ###CRITICAL### : you are NOT allowed to change H. 
     */
     public static int[] kMin(FibonacciHeap H, int k)
-    {    
-        int[] arr = new int[100];
-        return arr; // should be replaced by student code
+    {
+		FibonacciHeap helping_heap = new FibonacciHeap(H.min);
+        int[] minimal_k = new int[k];
+		for (int i = 0; i < k-1; k++){
+			HeapNode node = H.findMin();
+			minimal_k[i] = node.key;
+			HeapNode original_child = node.child_list.head;
+			HeapNode curr_node = original_child;
+			helping_heap.deleteMin();
+			while (curr_node != original_child){
+				helping_heap.insert(curr_node.key);
+				curr_node = curr_node.right;
+			}
+		}
+        return minimal_k; // should be replaced by student code
     }
-    
    /**
     * public class HeapNode
     * 
@@ -299,6 +312,7 @@ public class FibonacciHeap
     		return this.key;
     	}
     }
+
 	public static class LinkedList{
 		public HeapNode head;
 		public int size;
