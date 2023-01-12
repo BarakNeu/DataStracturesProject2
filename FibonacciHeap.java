@@ -5,16 +5,21 @@
  */
 public class FibonacciHeap
 {
+	public LinkedList roots_list = new LinkedList();
 	public HeapNode min;
+	public int size;
 	public int treesNum;
 	public int markedNum;
 	public static int linksNum;
 	public static int cutsNum;
 	
-	//contructor
-	public FibonacciHeap (FibonacciHeap.HeapNode heapRoot, int size) {
+	//constructor
+	public FibonacciHeap (FibonacciHeap.HeapNode heapRoot) {
 		this.min = heapRoot;
+		this.size = 1;
 		this.treesNum = 1;
+		this.markedNum = 0;
+		this.roots_list.insertAtStart(heapRoot);
 	}
 
    /**
@@ -23,9 +28,8 @@ public class FibonacciHeap
     * Returns true if and only if the heap is empty.
     *   
     */
-    public boolean isEmpty()
-    {
-    	return this.min == null; // should be replaced by student code
+    public boolean isEmpty() {
+		return this.min == null; // should be replaced by student code
     }
 		
    /**
@@ -41,23 +45,8 @@ public class FibonacciHeap
     	this.size++;
     	this.treesNum++;
     	HeapNode node = new HeapNode(key);
-    	
-    	//handling the case of an empty heap
-    	if (this.isEmpty()) {
-    		this.min = node;
-    		return node;
-    	}
-    	//if the heap isn't empty we will inset the node as the neighbour
-    	//of the min node as we are guranteed it is a root.
-    	node.right = min.right;
-    	node.left = min;
-    	min.right = node;
-    	min.right.left = node;
-    	
-    	//testing ig the inserted is a new min
-    	if (key < this.min.key) {
-    		this.min = node;
-    	}
+    	FibonacciHeap new_heap = new FibonacciHeap(node);
+		this.meld(new_heap);
     	return node; // should be replaced by student code
     }
 
@@ -70,10 +59,10 @@ public class FibonacciHeap
     public void deleteMin()
     {
     	//handling the case of an empty heap
-    	if (this.isEmpty()) return;
-    	
-    	HeapNode minChild = this.min.child;
-    	
+    	if (this.isEmpty()){
+			return;
+		}
+    	HeapNode minChild = this.min.child_list.head;
     	//checking if the node we are removing is marked for total marked count
     	if (this.min.mark) this.markedNum--;
     	
@@ -87,7 +76,7 @@ public class FibonacciHeap
     			this.min = this.min.right;
     		}
     		//if he has no neighbours then his child has to be the new min
-    		else this.min = this.min.child;
+    		else this.min = this.min.child_list.head;
     		
     		
     		
@@ -117,30 +106,28 @@ public class FibonacciHeap
     public void meld (FibonacciHeap heap2)
     {
     	//if heaps2 is empty we do nothing
-    	if (heap2.isEmpty()) return;
-    	
+    	if (heap2.isEmpty()){
+			return;
+		}
     	//if our heap is empty we become heap2 and thus update the fields
     	if (this.isEmpty()) {
     		this.size = heap2.size();
     		this.markedNum = heap2.markedNum;
     		this.treesNum = heap2.treesNum;
     		this.min = heap2.min;
+			this.roots_list = heap2.roots_list;
     		return;
     	}
-    	//the "classic case in which niether is empty
-    	heap2.min.left.right = min.right;
-    	this.min.right.left = heap2.min.left;
-    	this.min.right = heap2.min;
-    	heap2.min.left = this.min;
-    	
+    	//neither is empty
+    	heap2.roots_list.insertAtStart(this.roots_list.head);
     	//updates the min to be the min of both heaps
-    	if (this.min.getKey() > heap2.min.getKey()) this.min = heap2.min;
-    	
+    	if (this.min.getKey() > heap2.min.getKey()){
+			this.min = heap2.min;
+		}
     	//after the linking update the combined sizes acoordingly
     	this.markedNum += heap2.markedNum;
     	this.size += heap2.size;
     	this.markedNum += heap2.markedNum;
-    	return; // should be replaced by student code   		
     }
 
    /**
@@ -164,12 +151,12 @@ public class FibonacciHeap
     public int[] countersRep()
     {
     	//upper number of diffrent ranks in a heap according to the lectures
-    	int upper = (int) Math.ceil(Math.log(this.size) / Math.log(1.816)) + 1);
+    	int upper = (int) Math.ceil(Math.log(this.size) / Math.log(1.816)) + 1;
     	
     	int[] arr = new int[upper];
     	
     	//handling the empty case
-    	if(this.isEMpty()) return new int[0];
+    	if(this.isEmpty()) return new int[0];
     	
     	HeapNode next = this.min.right;
     	arr[this.min.rank] = 1; 
@@ -188,9 +175,9 @@ public class FibonacciHeap
 	* It is assumed that x indeed belongs to the heap.
     *
     */
-    public void delete(HeapNode x) 
-    {    
-    	return; // should be replaced by student code
+    public void delete(HeapNode x) {
+		this.decreaseKey(x, Integer.MIN_VALUE);
+		deleteMin();
     }
 
    /**
@@ -200,7 +187,20 @@ public class FibonacciHeap
     * to reflect this change (for example, the cascading cuts procedure should be applied if needed).
     */
     public void decreaseKey(HeapNode x, int delta)
-    {    
+    {
+		x.key -= delta;
+		if (x.key > x.parent.key){
+			return;
+		}
+		else {
+			x.parent.child_list.Delete(x);
+			x.parent = null;
+			x.mark = false;
+			this.roots_list.insertAtStart(x);
+		}
+		if (x.key < this.min.key){
+			this.min = x;
+		}
     	return; // should be replaced by student code
     }
 
@@ -210,8 +210,8 @@ public class FibonacciHeap
     * This function returns the current number of non-marked items in the heap
     */
     public int nonMarked() 
-    {    
-        return -232; // should be replaced by student code
+    {
+        return this.size - this.markedNum; // should be replaced by student code
     }
 
    /**
@@ -224,8 +224,8 @@ public class FibonacciHeap
     * plus twice the number of marked nodes in the heap. 
     */
     public int potential() 
-    {    
-        return -234; // should be replaced by student code
+    {
+        return this.treesNum + 2*this.markedNum; // should be replaced by student code
     }
 
    /**
@@ -238,7 +238,7 @@ public class FibonacciHeap
     */
     public static int totalLinks()
     {    
-    	return -345; // should be replaced by student code
+    	return linksNum; // should be replaced by student code
     }
 
    /**
@@ -250,7 +250,7 @@ public class FibonacciHeap
     */
     public static int totalCuts()
     {    
-    	return -456; // should be replaced by student code
+    	return cutsNum; // should be replaced by student code
     }
 
      /**
@@ -277,7 +277,7 @@ public class FibonacciHeap
     public static class HeapNode{
     	
     	public HeapNode parent;
-    	public HeapNode child;
+    	public LinkedList child_list = new LinkedList();
     	public HeapNode right;
     	public HeapNode left;
     	public int rank = 0;
@@ -288,10 +288,46 @@ public class FibonacciHeap
     	public HeapNode(int key) {
     		//default constractor for the nodes in the heap
     		this.key = key;
+			this.right = this;
+			this.left = this;
     	}
-
     	public int getKey() {
     		return this.key;
     	}
     }
+	public static class LinkedList{
+		public HeapNode head;
+		public int size;
+		public LinkedList() {
+			this.head = null;
+		}
+		public void insertAtStart(HeapNode to_insert){
+			if (this.size == 0){
+				this.head = to_insert;
+			}
+			else {
+				to_insert.left.right = this.head;
+				this.head.left = to_insert.left;
+				to_insert.left = this.head.left;
+				this.head.left.right = to_insert;
+				this.head = to_insert;
+			}
+			size++;
+		}
+		public void Delete(HeapNode to_delete){ // no need to handle edge cases, im the only one using this
+			if (this.size == 1){
+				this.head = null;
+				size--;
+				return;
+			}
+			if (this.head == to_delete){
+				this.head = this.head.right;
+			}
+			to_delete.left.right = to_delete.right;
+			to_delete.right.left = to_delete.left;
+			to_delete.right = null;
+			to_delete.left = null;
+			size--;
+		}
+	}
 }
