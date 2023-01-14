@@ -64,28 +64,114 @@ public class FibonacciHeap
     	if (this.isEmpty()){
 			return;
 		}
-    	HeapNode minChild = this.min.child_list.head;
+    	HeapNode n = this.min.child_list.head;
+    	HeapNode limiter = this.min.child_list.head;
     	//checking if the node we are removing is marked for total marked count
     	if (this.min.mark) this.markedNum--;
     	
-    	if (minChild != null) {
+    	if (n != null) { //if the min node has children
     		this.size--;
     		this.treesNum--;
-    		//handlnig the chainning between diffrent trees in the heap
+    		//Handling the chaining between different trees in the heap
     		if(this.min.right != this.min) {
     			this.min.right.left = this.min.left;
     			this.min.left.right = this.min.right;
-    			this.min = this.min.right;
     		}
-    		//if he has no neighbours then his child has to be the new min
-    		else this.min = this.min.child_list.head;
+    		//if he has no neighbours then his children will be the new roots
+    		else this.roots_list = this.min.child_list;
     		
-    		
-    		
-    		
+    		//adding the children of the deleted node to the roots_list
+    		do { HeapNode tmp = n.right;
+    			n.parent = null;
+    			if (n.mark) {
+    				n.mark = false;
+    				this.markedNum--;
+    			}
+    			this.roots_list.insertAtStart(n);
+    			n = tmp;
+    		}while(n != limiter);	
     	}
+    	else { //if the min node doesn't have children
+    		if (this.size == 1) {
+    			this.min = null;
+    			this.size = 0;
+    			this.treesNum = 0;
+    			this.markedNum = 0;
+    			return;
+    		}
+    		else {
+    			this.roots_list.Delete(min);
+    			this.size--;
+    			this.treesNum--;
+    		}
+    	}
+    	//fixing the heap
+    	consolidate();
+    	findNewMin();
      	return; // should be replaced by student code
-     	
+    }
+    
+    public void findNewMin() {
+    	//updating the new min of the heap
+    	this.min = roots_list.head;
+    	HeapNode node = roots_list.head.right;
+    	HeapNode limit = roots_list.head;
+    	while(node != limit) if(node.key < this.min.key)this.min = node;
+    }
+    
+    public void consolidate() {
+    	HeapNode[] treeRankArray = new HeapNode[(int) (Math.log(size) / Math.log(1.86)) + 1];
+    	HeapNode n = this.roots_list.head;
+    	if (n == null) return;
+    	do {
+    		n.left = null;
+    		n.right = null;
+    		if (treeRankArray[n.rank] == null) treeRankArray[n.rank] = n;
+    		else {
+    			do {
+    				HeapNode tmp = treeRankArray[n.rank];
+    				treeRankArray[n.rank] = null; 
+    				n = link(tmp, n);
+    			}while (treeRankArray[n.rank] != null);
+    			treeRankArray[n.rank] = n;
+    		}
+    		n = n.right;
+    	}while (n != roots_list.head);
+    	
+    }
+    
+    public HeapNode link (HeapNode root1, HeapNode root2) {
+    	//we will use this only on roots of the same rank
+    	HeapNode a;
+    	HeapNode b;
+    	
+    	if (root2.getKey() >= root1.getKey()) {
+    		a = root2;
+    		b = root1;
+    	}
+    	else {
+    		a = root1;
+    		b = root2;
+    	}
+    	if (a.child_list.head == null) {
+    		a.child_list.head = b;
+    		b.parent = a;
+    		b.right = b;
+    		b.left = b;
+    	}
+    	else {
+    		b.parent = a;
+    		HeapNode next = a.child_list.head.right;
+    		a.child_list.head.right = b;
+    		b.left = a.child_list.head;
+    		next.left = b;
+    		b.right = next;
+    	}
+    	a.parent = null;
+    	a.left = null;
+    	a.rank++;
+    	linksNum++;
+    	return a;
     }
 
    /**
@@ -126,7 +212,7 @@ public class FibonacciHeap
     	if (this.min.getKey() > heap2.min.getKey()){
 			this.min = heap2.min;
 		}
-    	//after the linking update the combined sizes acoordingly
+    	//after the linking update the combined sizes accordingly
     	this.markedNum += heap2.markedNum;
     	this.size += heap2.size;
     	this.markedNum += heap2.markedNum;
