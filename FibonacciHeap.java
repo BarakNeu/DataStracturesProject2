@@ -95,6 +95,7 @@ public class FibonacciHeap
     		if (this.size == 1) {
     			this.min = null;
     			this.size = 0;
+
     			this.treesNum = 0;
     			this.markedNum = 0;
     			return;
