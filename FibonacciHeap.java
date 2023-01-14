@@ -281,21 +281,37 @@ public class FibonacciHeap
 			return;
 		}
 		else {
-			x.parent.child_list.Delete(x);
-			x.parent = null;
-			if (x.mark == true){
-				x.mark = false;
-				this.markedNum --;
-			}
-			this.treesNum++;
-			this.roots_list.insertAtStart(x);
+			cascading_cuts(x, x.parent);
 		}
 		if (x.key < this.min.key){
 			this.min = x;
 		}
     	return; // should be replaced by student code
     }
-
+	public void cut(HeapNode x, HeapNode y){
+		x.parent = null;
+		if (x.mark == true){
+			markedNum -= 1;
+		}
+		x.mark = false;
+		y.rank -= 1;
+		y.child_list.Delete(x);
+		this.roots_list.insertAtStart(x);
+		treesNum++;
+		cutsNum++;
+	}
+	public void cascading_cuts(HeapNode x, HeapNode y ){
+		cut(x,y);
+		if (y.parent != null){
+			if (y.mark == false){
+				y.mark = true;
+				markedNum ++;
+			}
+			else {
+				cascading_cuts(y, y.parent);
+			}
+		}
+	}
    /**
     * public int nonMarked() 
     *
