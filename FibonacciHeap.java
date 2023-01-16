@@ -14,15 +14,6 @@ public class FibonacciHeap
 	public int markedNum;
 	public static int linksNum;
 	public static int cutsNum;
-	
-	//constructor
-	public FibonacciHeap (FibonacciHeap.HeapNode heapRoot) {
-		this.min = heapRoot;
-		this.size = 1;
-		this.treesNum = 1;
-		this.markedNum = 0;
-		this.roots_list.insertAtStart(heapRoot);
-	}
 
    /**
     * public boolean isEmpty()
@@ -47,8 +38,8 @@ public class FibonacciHeap
     	this.size++;
     	this.treesNum++;
     	HeapNode node = new HeapNode(key);
-    	FibonacciHeap new_heap = new FibonacciHeap(node);
-		this.meld(new_heap);
+    	if (key < this.min.key) this.min = node;
+    	this.roots_list.insertAtStart(node);
     	return node; // should be replaced by student code
     }
 
