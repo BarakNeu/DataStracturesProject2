@@ -283,10 +283,10 @@ public class FibonacciHeap
 	public void cut(HeapNode x, HeapNode y){
 		x.parent = null;
 		if (x.mark == true){
-			markedNum -= 1;
+			markedNum --;
 		}
 		x.mark = false;
-		y.rank -= 1;
+		y.rank --;
 		y.child_list.Delete(x);
 		this.roots_list.insertAtStart(x);
 		treesNum++;
@@ -363,7 +363,8 @@ public class FibonacciHeap
     */
     public static int[] kMin(FibonacciHeap H, int k)
     {
-		FibonacciHeap helping_heap = new FibonacciHeap(H.min);
+		FibonacciHeap helping_heap = new FibonacciHeap();
+		helping_heap.roots_list.insertAtStart(H.min);
         int[] minimal_k = new int[k];
 		for (int i = 0; i < k-1; k++){
 			HeapNode node = H.findMin();
