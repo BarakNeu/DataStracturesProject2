@@ -112,6 +112,7 @@ public class FibonacciHeap
     		}
     		else {
     			this.roots_list.Delete(min);
+    			this.min = null;
     			this.size--;
     			this.treesNum--;
     		}
@@ -136,6 +137,7 @@ public class FibonacciHeap
     public void consolidate() {
     	HeapNode[] treeRankArray = new HeapNode[(int) (Math.log(size) / Math.log(1.86)) + 1];
     	HeapNode n = this.roots_list.head;
+    	int i = this.roots_list.size;
     	if (n == null) return;
     	do {
     		HeapNode next = n.right;
@@ -150,9 +152,11 @@ public class FibonacciHeap
     			treeRankArray[n.rank] = n;
     		}
     		n = next;
-    	}while (n != roots_list.head);
+    		i--;
+    	}while (i >= 0);
     	this.min = null;
 		this.treesNum = 0;
+		this.roots_list.size = 0;
 		for (HeapNode heapNode : treeRankArray) {
 			// Placing the trees from the Array in the heap
 			if (heapNode != null) {
@@ -176,6 +180,7 @@ public class FibonacciHeap
     	}
     	a.child_list.insertAtStartChilds(b);
     	a.parent = null;
+    	b.parent = a;
     	a.rank++;
     	linksNum++;
     	return a;
@@ -476,6 +481,7 @@ public class FibonacciHeap
 				this.head.left = toInsert;
 				toInsert.left = tmpL;
 				tmpL.right = toInsert;
+				this.head = toInsert;
 			}
 			this.size++;
 		}
