@@ -43,9 +43,8 @@ public class FibonacciHeap
     *
     * Returns the newly created node.
     */
-    public HeapNode insert(int key)
-    {
-    	return insert(new HeapNode(key));
+    public HeapNode insert(int key) {
+		return insert(new HeapNode(key));
     }
 
     public HeapNode insert(HeapNode toInsert) {
@@ -65,14 +64,11 @@ public class FibonacciHeap
     		toInsert.left = tmpL;
     		this.first = toInsert;
     	}
-
     	if (toInsert.key < this.min.key) {
     		this.min = toInsert;
     	}
-
     	this.size++;
     	this.rootsNum++;
-
     	return toInsert;
     }
 
@@ -172,7 +168,6 @@ public class FibonacciHeap
     public void consolidate() {
     	HeapNode[] treeRankArray = new HeapNode[(int) (Math.log(size) / Math.log(1.86)) + 1];
     	HeapNode curr = this.first;
-
     	if (curr == null) {
     		return;
     	}
@@ -200,12 +195,10 @@ public class FibonacciHeap
 				// number of roots has gone down by one
 				rootsNum--;
 			};
-
 // 			System.out.println("new tree: " + String.valueOf(curr.key));
     		treeRankArray[curr.rank] = curr;
     		curr = n;
     	}
-
     	// debugging
     // 	for (int i = 0; i < treeRankArray.length; i++ ) {
     // 	    System.out.println("treeRank: " + String.valueOf(i));
@@ -215,7 +208,6 @@ public class FibonacciHeap
     // 	    System.out.println("values: " + String.valueOf(treeRankArray[i].key));
     // 	    }
     // 	}
-
     	this.min = null;
     	this.first = null;
 		this.rootsNum = 0;
@@ -280,9 +272,8 @@ public class FibonacciHeap
     * Returns the node of the heap whose key is minimal, or null if the heap is empty.
     *
     */
-    public HeapNode findMin()
-    {
-    	return this.min;
+    public HeapNode findMin() {
+		return this.min;
     }
     
     /**
@@ -291,9 +282,19 @@ public class FibonacciHeap
      * Melds heap2 with the current heap.
      *
      */
-     public void meld (FibonacciHeap heap2)
-     {
-     	  return; // should be replaced by student code   		
+     public void meld (FibonacciHeap heap2) {
+		 if (heap2.isEmpty()){ // if heap2 is empty we do nothing
+			 return;
+		 }
+		 if (this.isEmpty()){  // if our heap is empty we "become" heap2
+			 this.size = heap2.size();
+			 this.markedNum = heap2.markedNum;
+			 this.rootsNum = heap2.rootsNum;
+			 this.min = heap2.min;
+			 this.first = heap2.first;
+		 }
+		 // neither are empty
+
      }
 
     /**
@@ -302,8 +303,7 @@ public class FibonacciHeap
      * Returns the number of elements in the heap.
      *   
      */
-     public int size()
-     {
+     public int size() {
      	return this.size;
      }
      	
@@ -327,9 +327,9 @@ public class FibonacciHeap
  	* It is assumed that x indeed belongs to the heap.
      *
      */
-     public void delete(HeapNode x) 
-     {    
-     	return; // should be replaced by student code
+     public void delete(HeapNode x) {
+     	this.decreaseKey(x, Integer.MAX_VALUE - x.key);
+		 deleteMin();
      }
 
     /**
@@ -338,10 +338,56 @@ public class FibonacciHeap
      * Decreases the key of the node x by a non-negative value delta. The structure of the heap should be updated
      * to reflect this change (for example, the cascading cuts procedure should be applied if needed).
      */
-     public void decreaseKey(HeapNode x, int delta)
-     {    
-     	return; // should be replaced by student code
+     public void decreaseKey(HeapNode x, int delta) {
+		 x.key -= delta;
+		 if (x.key < this.min.key){
+			 this.min = x;
+		 }
+		 if (x.parent == null || x.key > x.parent.key){
+			 return;
+		 }
+		 else {
+			 cascading_cuts(x, x.parent);
+		 }
+		// updating the minimum happens inside cut
      }
+	 public void cut(HeapNode x, HeapNode y){ //cutting x from its parent y
+		 x.parent = null;
+		 if (x.mark){
+			 markedNum--;
+		 }
+		 x.mark = false;
+		 y.rank--;
+		 if (y.rank == 0){ //if x was the last son of y
+			 y.child = null;
+		 }
+		 else {
+			 y.child = x.right;
+		 }
+		 skipNode(x);
+		 this.insert(x);
+		 this.size--; //here I'm using which increases size, and I don't wanna do that
+		 cutsNum++;
+	 }
+	 public void cascading_cuts(HeapNode x, HeapNode y){
+		 cut(x,y);
+		 if (y.parent != null){
+			 if (y.mark == false){
+				 y.mark = true;
+				 markedNum++;
+			 }
+			 else {
+				 cascading_cuts(y, y.parent);
+			 }
+		 }
+	 }
+	 public void skipNode(HeapNode toDelete){ // used to skip over a node
+		 toDelete.left.right = toDelete.right;
+		 toDelete.right.left = toDelete.left;
+		 toDelete.right = null;
+		 toDelete.left = null;
+	 }
+
 
     /**
      * public int nonMarked() 
@@ -375,9 +421,8 @@ public class FibonacciHeap
      * trees of the same rank, and generates a tree of rank bigger by one, by hanging the
      * tree which has larger value in its root under the other tree.
      */
-     public static int totalLinks()
-     {    
-     	return -345; // should be replaced by student code
+     public static int totalLinks() {
+     	return linksNum; // should be replaced by student code
      }
 
     /**
@@ -387,8 +432,7 @@ public class FibonacciHeap
      * run-time of the program. A cut operation is the operation which disconnects a subtree
      * from its parent (during decreaseKey/delete methods). 
      */
-     public static int totalCuts()
-     {    
+     public static int totalCuts() {
      	return cutsNum;
      }
 
@@ -400,10 +444,22 @@ public class FibonacciHeap
      *  
      * ###CRITICAL### : you are NOT allowed to change H. 
      */
-     public static int[] kMin(FibonacciHeap H, int k)
-     {    
-         int[] arr = new int[100];
-         return arr; // should be replaced by student code
+     public static int[] kMin(FibonacciHeap H, int k) {
+		 FibonacciHeap helping_heap = new FibonacciHeap();
+		 helping_heap.insert(H.min);
+		 int[] minimal_k = new int[k];
+		 for (int i = 0; i < k-1; k++){
+			 HeapNode h_min = H.findMin();
+			 minimal_k[i] = h_min.key;
+			 HeapNode original_child = h_min.child;
+			 HeapNode curr_node = original_child;
+			 helping_heap.deleteMin();
+			 while (curr_node != original_child){
+				 helping_heap.insert(curr_node.key);
+				 curr_node = curr_node.right;
+			 }
+		 }
+      return minimal_k;
      }
 
    /**
