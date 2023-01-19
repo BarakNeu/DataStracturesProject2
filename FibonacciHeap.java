@@ -211,7 +211,9 @@ public class FibonacciHeap
     	this.min = null;
     	this.first = null;
 		this.rootsNum = 0;
-		for (HeapNode heapNode : treeRankArray) {
+		//for (HeapNode heapNode : treeRankArray) {
+		for (int i = treeRankArray.length-1; i >= 0; i--) {
+			HeapNode heapNode = treeRankArray[i];
 			// Placing the trees from the Array in the heap
 			if (heapNode != null) {
 				insert(heapNode);
@@ -283,18 +285,29 @@ public class FibonacciHeap
      *
      */
      public void meld (FibonacciHeap heap2) {
-		 if (heap2.isEmpty()){ // if heap2 is empty we do nothing
+		 if (heap2.isEmpty()){ // If heap2 is empty we do nothing.
 			 return;
 		 }
-		 if (this.isEmpty()){  // if our heap is empty we "become" heap2
+		 if (this.isEmpty()){  // If our heap is empty we "become" heap2.
 			 this.size = heap2.size();
 			 this.markedNum = heap2.markedNum;
 			 this.rootsNum = heap2.rootsNum;
 			 this.min = heap2.min;
 			 this.first = heap2.first;
 		 }
-		 // neither are empty
-
+		 // Neither are empty.
+		 HeapNode myRootsTail = this.first.left;
+		 HeapNode myRootsHead = this.first;
+		 HeapNode newHeapHead = heap2.first;
+		 HeapNode newHeapTail = heap2.first.left;
+		 //Connecting the tails and heads of the two heaps to create the new roots cycled chain.
+		 myRootsTail.right = newHeapHead;
+		 newHeapHead.left = myRootsTail;
+		 newHeapTail.right = myRootsHead;
+		 myRootsHead.left = newHeapTail;
+		 this.size += heap2.size;
+		 this.rootsNum += heap2.rootsNum;
+		 this.markedNum += heap2.markedNum;
      }
 
     /**
