@@ -54,9 +54,7 @@ public class FibonacciHeap
     }
     
     public void insertNode(HeapNode node) {
-    	if (size == 0) this.min = node;
     	this.treesNum++;
-    	if (node.key < this.min.key) this.min = node;
     	this.roots_list.insertAtStartRoots(node);
     }
 
@@ -80,26 +78,26 @@ public class FibonacciHeap
     	if (n != null) { //if the min node has children
     		this.size--;
     		this.treesNum--;
-    		//Handling the chaining between different trees in the heap
-    		if(this.min.right != this.min) {
-    			this.min.right.left = this.min.left;
-    			this.min.left.right = this.min.right;
-    		}
     		//if he has no neighbours then his children will be the new roots
-    		else {
+    		if(this.min.right == this.min) {
     			this.roots_list = this.min.child_list;
+    			this.roots_list.size = this.min.child_list.size;
     		}
     		
-    		//adding the children of the deleted node to the roots_list
-    		do { HeapNode tmp = n.right;
-    			n.parent = null;
-    			if (n.mark) {
-    				n.mark = false;
-    				this.markedNum--;
-    			}
-    			this.roots_list.insertAtStartRoots(n);
-    			n = tmp;
-    		}while(n != limiter);	
+    		else {
+    			this.roots_list.Delete(this.min);
+	    		//adding the children of the deleted node to the roots_list
+	    		do { 
+	    			n = n.right;
+	    			n.parent = null;
+	    			if (n.mark) {
+	    				n.mark = false;
+	    				this.markedNum--;
+	    			}
+	    			this.roots_list.insertAtStartRoots(n);
+	    			this.treesNum++;
+	    		}while(n != limiter);
+    		}
     	}
     	else { //if the min node doesn't have children
     		if (this.size == 1) {
@@ -148,6 +146,7 @@ public class FibonacciHeap
     				HeapNode tmp = treeRankArray[n.rank];
     				treeRankArray[n.rank] = null; 
     				n = link(tmp, n);
+    				treesNum --;
     			}while (treeRankArray[n.rank] != null);
     			treeRankArray[n.rank] = n;
     		}
@@ -157,9 +156,13 @@ public class FibonacciHeap
     	this.min = null;
 		this.treesNum = 0;
 		this.roots_list.size = 0;
+		boolean flag = true;
 		for (HeapNode heapNode : treeRankArray) {
 			// Placing the trees from the Array in the heap
 			if (heapNode != null) {
+				if (flag) {
+					this.min = heapNode;
+				}
 				insertNode(heapNode);
 			}
 		}
@@ -178,8 +181,18 @@ public class FibonacciHeap
     		a = root1;
     		b = root2;
     	}
-    	a.child_list.insertAtStartChilds(b);
+    	if (a.child_list.head != null) {
+    		a.child_list.insertAtStartRoots(b);
+    	}
+    	else {
+    		a.child_list.head = b;
+    		a.child_list.size++;
+    	}
     	a.parent = null;
+    	if (b.mark) {
+			b.mark = false;
+			this.markedNum--;
+    	}
     	b.parent = a;
     	a.rank++;
     	linksNum++;
@@ -433,6 +446,7 @@ public class FibonacciHeap
 		public int size;
 		public LinkedList() {
 			this.head = null;
+			this.size = 0;
 		}
 		//public void insertAtStart(HeapNode to_insert){
 		//	if (this.size == 0){
@@ -448,25 +462,6 @@ public class FibonacciHeap
 		//	size++;
 		//}
 		
-		public void insertAtStartChilds(HeapNode toInsert) {
-			if (this.head == null) {
-				this.head = toInsert;
-				toInsert.right = toInsert;
-				toInsert.left = toInsert;
-			}
-			else {
-				toInsert.parent = this.head.parent;
-				HeapNode tmpL = this.head.left;
-				toInsert.right = this.head;
-				this.head.left = toInsert;
-				toInsert.left = tmpL;
-				tmpL.right = toInsert;
-				toInsert.child_list = this.head.child_list;
-				this.head.child_list = new LinkedList();
-				this.head = toInsert;
-			}
-			this.size++;
-		}
 		
 		public void insertAtStartRoots(HeapNode toInsert) {
 			if (this.head == null) {
