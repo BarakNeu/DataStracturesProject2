@@ -156,8 +156,8 @@ class HeapPrinter {
                 String.format(" Rank: %d ", heapNode.getRank()),
                 String.format(" Marked: %b ", heapNode.isMarked()),
                 String.format(" Parent: %s ", keyify.apply(heapNode::getParent)),
-                String.format(" Next: %s ", keyify.apply(heapNode::getNext)),
-                String.format(" Prev: %s ", keyify.apply(heapNode::getPrev)),
+                String.format(" Next: %s ", keyify.apply(heapNode::getRight)),
+                String.format(" Prev: %s ", keyify.apply(heapNode::getLeft)),
                 String.format(" Child: %s", keyify.apply(heapNode::getChild)));
 
         /* Print details in box */
@@ -215,8 +215,8 @@ class HeapPrinter {
             }
 
             visited.add(heapNode);
-            nexts.set(nexts.size() - 1, !visited.contains(heapNode.getNext()));
-            stack.push(new Pair<>(heapNode.getNext(), depth));
+            nexts.set(nexts.size() - 1, !visited.contains(heapNode.getRight()));
+            stack.push(new Pair<>(heapNode.getRight(), depth));
 
             function.accept(heapNode, nexts);
 
@@ -276,16 +276,16 @@ public class TestFibonacciHeap {
                 actualMin = node;
             }
 
-            if (node.getNext() != null) {
-                assertSame(node, node.getNext().getPrev());
+            if (node.getRight() != null) {
+                assertSame(node, node.getRight().getLeft());
             }
-            if (node.getPrev() != null) {
-                assertSame(node, node.getPrev().getNext());
+            if (node.getLeft() != null) {
+                assertSame(node, node.getLeft().getRight());
             }
 
             actualRanks.merge(node.getRank(), 1, Integer::sum); // increase value by 1 or put 1 if absent
 
-            node = node.getNext();
+            node = node.getRight();
         } while (node != null && node != heap.getFirst());
 
         for (int i = 0; i < ranks.length; ++i) {
@@ -338,7 +338,7 @@ public class TestFibonacciHeap {
             } else {
                 assertTrue(currentChild.getKey() >= node.getKey());
             }
-            currentChild = currentChild.getNext();
+            currentChild = currentChild.getRight();
         } while (currentChild != null && currentChild != node.getChild());
 
         if (childrenCount != node.getRank()) {
@@ -373,7 +373,7 @@ public class TestFibonacciHeap {
 
             // Check current node
             actualSize++;
-            stack.push(node.getNext());
+            stack.push(node.getRight());
             numberOfMarked += node.isMarked() ? 1 : 0;
 
             assertValidHeapNodeChildren(node);
@@ -1555,9 +1555,9 @@ public class TestFibonacciHeap {
 
         FibonacciHeap.HeapNode first = heap.getFirst();
         assertEquals(first.getKey(), 0);
-        assertEquals(first.getNext().getKey(), 2);
-        assertEquals(first.getNext().getNext().getKey(), 8);
-        assertEquals(first.getNext().getNext().getNext().getKey(), 5);
+        assertEquals(first.getRight().getKey(), 2);
+        assertEquals(first.getRight().getRight().getKey(), 8);
+        assertEquals(first.getRight().getRight().getRight().getKey(), 5);
     }
 
     @Test
@@ -1570,10 +1570,10 @@ public class TestFibonacciHeap {
         FibonacciHeap.HeapNode first = heap.getFirst();
         assertEquals(0, first.getRank());
         assertEquals(1, first.getKey());
-        assertEquals(first.getNext().getRank(), 1);
-        assertEquals(2, first.getNext().getKey());
-        assertEquals(first.getNext().getNext().getRank(), 2);
-        assertEquals(4, first.getNext().getNext().getKey());
+        assertEquals(first.getRight().getRank(), 1);
+        assertEquals(2, first.getRight().getKey());
+        assertEquals(first.getRight().getRight().getRank(), 2);
+        assertEquals(4, first.getRight().getRight().getKey());
     }
 
     @Test
@@ -1632,8 +1632,8 @@ public class TestFibonacciHeap {
         assertValidHeap(heap);
         assertSame(nodes.get(2), heap.findMin());
         assertSame(nodes.get(2), heap.getFirst());
-        assertSame(nodes.get(3), heap.getFirst().getNext());
-        assertSame(nodes.get(4), heap.getFirst().getNext().getChild());
+        assertSame(nodes.get(3), heap.getFirst().getRight());
+        assertSame(nodes.get(4), heap.getFirst().getRight().getChild());
     }
 
     @Test
@@ -1667,7 +1667,7 @@ public class TestFibonacciHeap {
         assertSame(nodes.get(2), heap.findMin());
         assertSame(nodes.get(2), heap.getFirst());
         assertSame(nodes.get(4), heap.getFirst().getChild());
-        assertSame(nodes.get(3), heap.getFirst().getChild().getNext());
+        assertSame(nodes.get(3), heap.getFirst().getChild().getRight());
         assertSame(nodes.get(5), heap.getFirst().getChild().getChild());
     }
 
@@ -1713,7 +1713,7 @@ public class TestFibonacciHeap {
         assertValidHeap(heap);
 
         assertSame(nodes.get(2), heap.getFirst());
-        assertSame(nodes.get(3), heap.getFirst().getNext());
+        assertSame(nodes.get(3), heap.getFirst().getRight());
     }
 
     @Test
@@ -1736,7 +1736,7 @@ public class TestFibonacciHeap {
         assertSame(nodes.get(-25), heap.findMin());
         assertSame(nodes.get(-25), heap.getFirst());
         assertSame(nodes.get(-15), heap.getFirst().getChild());
-        assertSame(nodes.get(-20), heap.getFirst().getChild().getNext());
+        assertSame(nodes.get(-20), heap.getFirst().getChild().getRight());
         assertSame(nodes.get(-10), heap.getFirst().getChild().getChild());
     }
 
@@ -1759,7 +1759,7 @@ public class TestFibonacciHeap {
         assertValidHeap(heap);
         heap.deleteMin();
         assertSame(nodes.get(2), heap.getFirst());
-        assertSame(nodes.get(3), heap.getFirst().getNext());
+        assertSame(nodes.get(3), heap.getFirst().getRight());
     }
 
     @Test
@@ -1793,13 +1793,13 @@ public class TestFibonacciHeap {
 
         FibonacciHeap.HeapNode node = heap.getFirst();
         assertSame(nodes.get(2), heap.getFirst());
-        node = node.getNext();
+        node = node.getRight();
         assertSame(nodes.get(3), node);
-        node = node.getNext();
+        node = node.getRight();
         assertSame(nodes.get(5), node);
-        node = node.getNext();
+        node = node.getRight();
         assertSame(nodes.get(9), node);
-        node = node.getNext();
+        node = node.getRight();
         assertSame(nodes.get(17), node);
     }
 
@@ -1881,7 +1881,7 @@ public class TestFibonacciHeap {
         testDeletion(heap, heap.getFirst()); // delete first
 
         assertSame(nodes.get(10), heap.getFirst());
-        assertSame(nodes.get(2), heap.getFirst().getNext());
+        assertSame(nodes.get(2), heap.getFirst().getRight());
         assertSame(nodes.get(2), heap.findMin());
     }
 
@@ -1904,7 +1904,7 @@ public class TestFibonacciHeap {
         FibonacciHeap.HeapNode middle, first, second;
         int i = 1;
         for (;i < Math.min(10, n / 5); i++) { // test the first 10 iterations
-            middle = heap.getFirst().getChild().getNext();
+            middle = heap.getFirst().getChild().getRight();
             currentNodes = testInsertionReverse(heap, n - ((i + 1) * 5), n - ((i + 1) * 5) + 4);
             heap.deleteMin();
             assertValidHeap(heap);
@@ -1916,7 +1916,7 @@ public class TestFibonacciHeap {
         }
 
         for (; i < n / 5; i++) { // complete all iterations (unchecked)
-            middle = heap.getFirst().getChild().getNext();
+            middle = heap.getFirst().getChild().getRight();
             first = heap.insert(n - ((i + 1) * 5) + 4);
             second = heap.insert(n - ((i + 1) * 5) + 3);
             heap.insert(n - ((i + 1) * 5) + 2);
@@ -1932,7 +1932,7 @@ public class TestFibonacciHeap {
         assertValidHeap(heap);
 
 
-        testDeletion(heap, heap.getFirst().getChild().getNext());
+        testDeletion(heap, heap.getFirst().getChild().getRight());
         FibonacciHeap.HeapNode node = heap.getFirst();
         while (node != null) {
             assertTrue(node.getChild() != null ? node.getRank() == 1 : node.getRank() == 0);
@@ -1971,7 +1971,7 @@ public class TestFibonacciHeap {
         node = heap.getFirst();
         while (node != null && node != heap.getFirst()) {
             assertNull(node.getChild());
-            node = node.getNext();
+            node = node.getRight();
         }
     }
 }
