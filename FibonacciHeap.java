@@ -154,7 +154,7 @@ public class FibonacciHeap
     }
 
     public void consolidate() {
-    	HeapNode[] treeRankArray = new HeapNode[(int) Math.ceil(Math.log(size) / Math.log(2)) + 1];
+    	HeapNode[] treeRankArray = new HeapNode[2 * (int) (Math.ceil(Math.log(size) / Math.log(2)) + 1)];
     	HeapNode curr = this.first;
     	if (curr == null) {
     		return;
@@ -279,6 +279,7 @@ public class FibonacciHeap
 			 this.rootsNum = heap2.rootsNum;
 			 this.min = heap2.min;
 			 this.first = heap2.first;
+			 return;
 		 }
 		 // Neither are empty.
 		 HeapNode myRootsTail = this.first.left;
@@ -293,6 +294,9 @@ public class FibonacciHeap
 		 this.size += heap2.size;
 		 this.rootsNum += heap2.rootsNum;
 		 this.markedNum += heap2.markedNum;
+		 if (heap2.min.key < this.min.key){
+			 this.min = heap2.min;
+		 }
      }
 
     /**
@@ -364,7 +368,6 @@ public class FibonacciHeap
 			 this.min = x;
 		 }
 		 if (x.parent == null || x.key > x.parent.key){
-			 return;
 		 }
 		 else {
 			 cascading_cuts(x, x.parent);
@@ -462,32 +465,26 @@ public class FibonacciHeap
      * This static function returns the k smallest elements in a Fibonacci heap that contains a single tree.
      * The function should run in O(k*deg(H)). (deg(H) is the degree of the only tree in H.)
      *  
-     * ###CRITICAL### : you are NOT allowed to change H. 
+     * ###CRITICAL### : you are NOT allowed to change H.
      */
      public static int[] kMin(FibonacciHeap H, int k) {
 		 if (H.isEmpty()){
 			 return new int[0];
 		 }
 		 FibonacciHeap helping_heap = new FibonacciHeap();
-		 helping_heap.insert(H.min.key);
+		 helping_heap.insert(H.findMin().key);
 		 int[] minimal_k = new int[k];
 		 for (int i = 0; i < k; i++){
-			 HeapNode h_min = H.findMin();
+			 HeapNode h_min = helping_heap.findMin();
 			 minimal_k[i] = h_min.key;
-			 HeapNode original_child = h_min.child;
-			 HeapNode curr_node = original_child;
 			 helping_heap.deleteMin();
-			 while (curr_node != original_child){
-				 helping_heap.insert(curr_node.key);
-				 curr_node = curr_node.right;
-			 }
+
 		 }
       return minimal_k;
      }
 	 public HeapNode getFirst(){
 		 return this.first;
 	 }
-
 
    /**
     * public class HeapNode
