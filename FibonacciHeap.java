@@ -7,6 +7,29 @@
  */
 public class FibonacciHeap
 {
+	public static void main(String[] args){
+		FibonacciHeap test = new FibonacciHeap();
+		for (int i = 1; i< 5; i++){
+			long begin = System.currentTimeMillis();
+			int m = (int) Math.pow(2, i*5);
+			HeapNode[] pointers = new HeapNode[m+1];
+			int position = 0;
+			for (double k = Math.pow(2, i*5) - 1; k>= -1; k-- ){
+				pointers[position] = test.insert( (int) k);
+				position++;
+			}
+			test.deleteMin();
+			int j = (int) ((int) Math.log(m)/ Math.log(2));
+			for (; j>= 1; j--){
+				test.decreaseKey(pointers[(int) (m-Math.pow(2,j)+1)], m+1);
+			}
+			long end = System.currentTimeMillis();
+			System.out.println(end-begin);
+			System.out.println(linksNum);
+			System.out.println(cutsNum);
+			System.out.println(test.potential());
+		}
+	}
 
 	public HeapNode first;
 	public HeapNode min;
@@ -198,9 +221,9 @@ public class FibonacciHeap
     	a.child = b;
 		b.parent = a;
     	// a has gained a child
+		a.mark = false;
     	a.rank++;
     	linksNum++;
-    	a.mark = false;
     	return a;
     }
 
@@ -303,7 +326,7 @@ public class FibonacciHeap
      *
      */
      public void delete(HeapNode x) { //O(logn)
-     	this.decreaseKey(x, Integer.MAX_VALUE - x.key);
+     	 this.decreaseKey(x, x.key-Integer.MIN_VALUE);
 		 deleteMin();
      }
 
@@ -318,10 +341,14 @@ public class FibonacciHeap
 		 if (x.key < this.min.key){ //updating the min if necessary
 			 this.min = x;
 		 }
-		 if (x.parent == null || x.key > x.parent.key){ // heap rule not broken
+		 if (x.parent == null){ // heap rule not broken
 		 }
 		 else {
-			 cascading_cuts(x, x.parent);
+			 if (x.key > x.parent.key){
+			 }
+			 else {
+				 cascading_cuts(x, x.parent);
+			 }
 		 }
 		// updating the minimum happens inside cut
      }
@@ -332,13 +359,13 @@ public class FibonacciHeap
 		 }
 		 x.mark = false;
 		 y.rank--;
-		 if (y.rank == 0){ //if x was the last son of y
+		 if (x.right == x){ //if x was the last son of y
 			 y.child = null;
 		 }
 		 else {
 			 y.child = x.right;
+			 skipNode(x);
 		 }
-		 skipNode(x);
 		 this.insert(x);
 		 this.size--; //here I'm using which increases size, and I don't wanna do that
 		 cutsNum++;
@@ -382,8 +409,7 @@ public class FibonacciHeap
      * In words: The potential equals to the number of trees in the heap
      * plus twice the number of marked nodes in the heap. 
      */
-     public int potential() 
-     {    
+     public int potential() {
          return rootsNum + 2 * markedNum;
      } //O(1)
 
