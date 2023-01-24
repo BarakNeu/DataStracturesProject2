@@ -1889,7 +1889,7 @@ public class TestFibonacciHeap {
     @Test
     @Order(4900)
     public void testSpecialMarkedChainTree() {
-        int depth = 5000;
+        int depth = 10000;
         // case 10
         int n = depth * 5; // must divide by 5
 
